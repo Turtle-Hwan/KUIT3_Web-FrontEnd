@@ -1,4 +1,5 @@
 # KUIT3_Web-FrontEnd
+개발 동아리 KUIT 3기 Web 과정
 
 ## 1주차 결과물 : 간단한 HTML 작성 및 웹사이트
 - [\[KUIT 3기 Web\] 1주차 - Web 기본 지식 공부 내용 정리](https://turtle-hwan.tistory.com/5)
