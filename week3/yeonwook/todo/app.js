@@ -1,15 +1,44 @@
 const todoListEl = document.getElementById("todoList");
 const todoInputEl = document.getElementById("todoInput");
 
-const API_URL = "http://localhost:8080/todos";
+const API_URL = "http://localhost:3001/todos";
 
 fetch(API_URL)
   .then((response) => response.json())
   .then((data) => renderTodo(data));
 
 const updateTodo = (todoId, originalTitle) => {
-  const todoItem = document.querySelector(`#todo-${todoId}`);
-  // mission
+
+  const updateContainer = document.createElement("li");
+
+  const inputToDoEl = document.createElement("input");
+  const updateButton = document.createElement("button");
+  updateButton.classList.add("updatebutton");
+  updateButton.textContent = "수정완료";
+
+  inputToDoEl.setAttribute("id", "todoInput");
+  inputToDoEl.type = "text";
+  inputToDoEl.placeholder = `${originalTitle} 수정`;
+  updateContainer.append(inputToDoEl);
+  updateContainer.append(updateButton);
+  todoListEl.append(updateContainer)
+
+  updateButton.onclick = ()=>{
+    const newTitle = inputToDoEl.value.toString();
+    if(!newTitle) return;
+    fetch(API_URL + "/" + todoId, {
+      method: "PATCH",
+      headers:{"Content-Type": "application/json"},
+      body : JSON.stringify({
+        title: newTitle, completed : false
+      })
+    })
+    .then((response) => response.json())
+    .then((data) => renderTodo(data));
+    todoListEl.remove(inputToDoEl);
+    todoListEl.remove(updateButton);
+  }
+
 };
 
 const renderTodo = (newTodos) => {
@@ -19,11 +48,11 @@ const renderTodo = (newTodos) => {
     listEl.textContent = todo.title;
     listEl.id = `todo-${todo.id}`;
 
-    const deleteEl = document.createElement("span");
+    const deleteEl = document.createElement("button");
     deleteEl.textContent = "🗑️";
     deleteEl.onclick = () => deleteTodo(todo.id);
 
-    const udpateEl = document.createElement("span");
+    const udpateEl = document.createElement("button");
     udpateEl.textContent = "✏️";
     udpateEl.onclick = () => updateTodo(todo.id, todo.title);
 
@@ -60,7 +89,7 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
 const deleteTodo = (todoId) => {
   fetch(API_URL + "/" + todoId, {

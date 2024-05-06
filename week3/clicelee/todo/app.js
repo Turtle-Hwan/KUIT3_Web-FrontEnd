@@ -1,4 +1,4 @@
-const todoListEl = document.getElementById("todoList");
+const todoListEl = document.getElementById("todoList") as HTMLElement;
 const todoInputEl = document.getElementById("todoInput");
 
 const API_URL = "http://localhost:8080/todos";
@@ -6,11 +6,6 @@ const API_URL = "http://localhost:8080/todos";
 fetch(API_URL)
   .then((response) => response.json())
   .then((data) => renderTodo(data));
-
-const updateTodo = (todoId, originalTitle) => {
-  const todoItem = document.querySelector(`#todo-${todoId}`);
-  // mission
-};
 
 const renderTodo = (newTodos) => {
   todoListEl.innerHTML = "";
@@ -23,14 +18,43 @@ const renderTodo = (newTodos) => {
     deleteEl.textContent = "🗑️";
     deleteEl.onclick = () => deleteTodo(todo.id);
 
-    const udpateEl = document.createElement("span");
-    udpateEl.textContent = "✏️";
-    udpateEl.onclick = () => updateTodo(todo.id, todo.title);
+    const updateEl = document.createElement("span"); 
+    updateEl.textContent = "✏️";
+    updateEl.onclick = () => updateTodo(todo.id, todo.title); 
 
     listEl.append(deleteEl);
-    listEl.append(udpateEl);
+    listEl.append(updateEl);
     todoListEl.append(listEl);
   });
+};
+
+const updateTodo = (todoId, originalTitle) => {
+  const todoItem = document.querySelector(`#todo-${todoId}`);
+  const newTitle = prompt("Enter new title:", originalTitle);
+
+  if (!newTitle) return; 
+
+  fetch(API_URL + "/" + todoId, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title: newTitle }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to update todo");
+      }
+      return response.json();
+    })
+    .then(() => {
+      return fetch(API_URL);
+    })
+    .then((response) => response.json())
+    .then((data) => renderTodo(data))
+    .catch((error) => {
+      console.error("Error updating todo:", error.message);
+    });
 };
 
 const addTodo = () => {
@@ -60,7 +84,7 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
 const deleteTodo = (todoId) => {
   fetch(API_URL + "/" + todoId, {

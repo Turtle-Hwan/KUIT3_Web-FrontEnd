@@ -1,7 +1,7 @@
 const todoListEl = document.getElementById("todoList");
 const todoInputEl = document.getElementById("todoInput");
 
-const API_URL = "http://localhost:8080/todos";
+const API_URL = "http://localhost:3000/todos";
 
 fetch(API_URL)
   .then((response) => response.json())
@@ -9,7 +9,27 @@ fetch(API_URL)
 
 const updateTodo = (todoId, originalTitle) => {
   const todoItem = document.querySelector(`#todo-${todoId}`);
-  // mission
+  todoItem.innerHTML = "";
+  const inputEl = document.createElement("input");
+  inputEl.value = originalTitle;
+  todoItem.append(inputEl);
+
+  inputEl.focus();
+  inputEl.addEventListener("keydown", (event) => {
+    if (event.key == "Enter") {
+      const newTitle = inputEl.value;
+      fetch(API_URL + "/" + todoId, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: newTitle }),
+      })
+        .then(() => fetch(API_URL))
+        .then((response) => response.json())
+        .then((data) => renderTodo(data));
+    }
+  });
 };
 
 const renderTodo = (newTodos) => {
@@ -60,7 +80,7 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
 const deleteTodo = (todoId) => {
   fetch(API_URL + "/" + todoId, {

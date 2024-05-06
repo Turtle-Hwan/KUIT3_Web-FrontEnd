@@ -1,13 +1,31 @@
-const todoListEl = document.getElementById("todoList");
-const todoInputEl = document.getElementById("todoInput");
+const todoListEl = document.getElementById("todoList") as HTMLElement;
+const todoInputEl = document.getElementById("todoInput") as HTMLInputElement;
 
 const API_URL = "http://localhost:8080/todos";
+
+interface Todo {
+  id: number;
+  titls: string;
+  createdAt: string;
+  completed: boolean;
+}
+
+interface Todos {
+  todos: Todo[];
+}
+
+const fetchTodos = async (): Promise<Todos> => {
+  const response = await fetch(API_URL);
+  const data = await response.json();
+  return data;
+};
 
 fetch(API_URL)
   .then((response) => response.json())
   .then((data) => renderTodo(data));
+// document onLoad eventListener
 
-const updateTodo = (todoId, originalTitle) => {
+const updateTodo = (todoId: number, originalTitle: string) => {
   const todoItem = document.querySelector(`#todo-${todoId}`);
   // mission
 };
@@ -60,13 +78,12 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
-const deleteTodo = (todoId) => {
-  fetch(API_URL + "/" + todoId, {
+const deleteTodo = async (todoId: number) => {
+  await fetch(API_URL + "/" + todoId, {
     method: "DELETE",
-  })
-    .then(() => fetch(API_URL))
-    .then((response) => response.json())
-    .then((data) => renderTodo(data));
+  });
+  const newTodos = await fetchTodos();
+  renderTodo(newTodos.todos);
 };

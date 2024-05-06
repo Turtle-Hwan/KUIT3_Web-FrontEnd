@@ -1,23 +1,47 @@
 const todoListEl = document.getElementById("todoList");
 const todoInputEl = document.getElementById("todoInput");
 
-const API_URL = "http://localhost:8080/todos";
+const API_URL = "http://localhost:3000/todos";
 
 fetch(API_URL)
   .then((response) => response.json())
   .then((data) => renderTodo(data));
 
-const updateTodo = (todoId, originalTitle) => {
-  const todoItem = document.querySelector(`#todo-${todoId}`);
-  // mission
-};
-
+  const updateTodo = (todoId, originalTitle) => {
+    const todoItem = document.querySelector(`#todo-${todoId}`);
+    todoItem.innerHTML = ""; //html 내부 요소 삭제
+    const inputEl = document.createElement("input"); //
+    inputEl.id = "Input";
+    inputEl.value = originalTitle;
+    todoItem.append(inputEl);
+    
+    inputEl.focus(); //input박스 생성 후 커서 이동
+    inputEl.addEventListener("keydown", (event) => { //
+      if(event.key == "Enter"){
+        const newTitle = inputEl.value;
+        fetch(API_URL + "/" + todoId, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: newTitle }),
+        })
+          .then(() => fetch(API_URL))
+          .then((response) => response.json())
+          .then((data) => renderTodo(data));
+      }
+    });
+  }
+ 
 const renderTodo = (newTodos) => {
   todoListEl.innerHTML = "";
-  newTodos.forEach((todo) => {
+  newTodos.forEach((todo) => { 
     const listEl = document.createElement("li");
     listEl.textContent = todo.title;
     listEl.id = `todo-${todo.id}`;
+    
+    const icon = document.createElement("div"); // 아이콘위치때문에 수정!
+    icon.className = "icon-container";
 
     const deleteEl = document.createElement("span");
     deleteEl.textContent = "🗑️";
@@ -27,8 +51,9 @@ const renderTodo = (newTodos) => {
     udpateEl.textContent = "✏️";
     udpateEl.onclick = () => updateTodo(todo.id, todo.title);
 
-    listEl.append(deleteEl);
-    listEl.append(udpateEl);
+    icon.append(deleteEl);
+    icon.append(udpateEl);
+    listEl.append(icon);
     todoListEl.append(listEl);
   });
 };
@@ -41,7 +66,7 @@ const addTodo = () => {
   if (!title) return;
 
   const newTodo = {
-    id: date.getTime(),
+    id: date.getTime().toString(),
     title,
     createdAt,
   };
@@ -60,7 +85,7 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
 const deleteTodo = (todoId) => {
   fetch(API_URL + "/" + todoId, {

@@ -9,9 +9,25 @@ fetch(API_URL)
 
 const updateTodo = (todoId, originalTitle) => {
   const todoItem = document.querySelector(`#todo-${todoId}`);
-  // mission
+  const newTitle = prompt("Enter new todo:", originalTitle);
+
+  if(!newTitle) {
+    alert("Todo cannot be empty!");
+  }
+  
+  fetch(`${API_URL}/${todoId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title:newTitle, completed: false }),
+  })
+    .then((response) => response.json())
+    .then((data) => renderTodo(data))
+    .catch((err) => console.error(err));
 };
 
+//@desc redering todo
 const renderTodo = (newTodos) => {
   todoListEl.innerHTML = "";
   newTodos.forEach((todo) => {
@@ -33,6 +49,7 @@ const renderTodo = (newTodos) => {
   });
 };
 
+//@desc add todo
 const addTodo = () => {
   const title = todoInputEl.value;
   const date = new Date();
@@ -60,7 +77,7 @@ const addTodo = () => {
     })
     .then((response) => response.json())
     .then((data) => renderTodo(data));
-};ㅋ
+};
 
 const deleteTodo = (todoId) => {
   fetch(API_URL + "/" + todoId, {
