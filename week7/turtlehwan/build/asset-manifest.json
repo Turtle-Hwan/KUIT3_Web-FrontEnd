@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/KUIT3_Web-FrontEnd/week7/turtlehwan/build/static/js/main.a9544153.js",
+    "main.js": "/KUIT3_Web-FrontEnd/week7/turtlehwan/build/static/js/main.20d243d6.js",
     "index.html": "/KUIT3_Web-FrontEnd/week7/turtlehwan/build/index.html",
-    "main.a9544153.js.map": "/KUIT3_Web-FrontEnd/week7/turtlehwan/build/static/js/main.a9544153.js.map"
+    "main.20d243d6.js.map": "/KUIT3_Web-FrontEnd/week7/turtlehwan/build/static/js/main.20d243d6.js.map"
   },
   "entrypoints": [
-    "static/js/main.a9544153.js"
+    "static/js/main.20d243d6.js"
   ]
 }
