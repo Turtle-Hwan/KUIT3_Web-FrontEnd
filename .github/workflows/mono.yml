@@ -1,0 +1,94 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      
+  # Actions 탭에서 수동으로 워크플로우를 실행할 수 있도록 구성
+  workflow_dispatch:
+
+# 동시에 하나의 배포만 허용하도록 구성
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+
+jobs:
+  build:
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: Cache Node.js modules on Push
+      if: github.event_name == 'push'
+      run: |
+        for week_dir in week{1..10}; do
+          for project_dir in ${{ github.workspace }}/$week_dir/*; do
+            if [ -f "$project_dir/package.json" ]; then
+              # Cache based on the hash of package-lock.json or yarn.lock
+              - name: Cache node_modules
+                uses: actions/cache@v3
+                with:
+                  path: $project_dir/node_modules
+                  key: ${{ runner.os }}-node-${{ hashFiles('${project_dir}/package-lock.json') }}
+                  restore-keys: |
+                    ${{ runner.os }}-node-
+
+              cd $project_dir
+              # Check if package.json contains a build script
+              if grep -q '"build":' package.json; then
+                npm install
+                npm run build
+              fi
+              cd - # Go back to previous directory
+            fi
+          done
+        done
+
+    - name: Cache Node.js modules on Pull Request
+      if: github.event_name == 'pull_request'
+      run: |
+        # Get the list of modified files in the pull request
+        modified_dirs=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | cut -d/ -f1-2 | sort | uniq)
+        for dir in $modified_dirs; do
+          if [ -f "$dir/package.json" ]; then
+            # Cache based on the hash of package-lock.json or yarn.lock
+            - name: Cache node_modules
+              uses: actions/cache@v3
+              with:
+                path: $dir/node_modules
+                key: ${{ runner.os }}-node-${{ hashFiles('${dir}/package-lock.json') }}
+                restore-keys: |
+                  ${{ runner.os }}-node-
+
+            cd $dir
+            # Check if package.json contains a build script
+            if grep -q '"build":' package.json; then
+              npm install
+              npm run build
+            fi
+            cd - # Go back to previous directory
+          fi
+        done
+
+    - name: Deploy to GitHub Pages
+      if: github.event_name == 'push' || github.event_name == 'pull_request'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ${{ github.workspace }}
+        destination_dir: ${{ github.workspace }}/$week_dir/$project_dir/dist
