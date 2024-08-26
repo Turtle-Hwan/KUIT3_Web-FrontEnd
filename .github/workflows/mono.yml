@@ -27,21 +27,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Cache Node.js modules on Push
+    - name: Install and Build Projects on Push
       if: github.event_name == 'push'
       run: |
         for week_dir in week{1..10}; do
           for project_dir in ${{ github.workspace }}/$week_dir/*; do
             if [ -f "$project_dir/package.json" ]; then
-              # Cache based on the hash of package-lock.json or yarn.lock
-              - name: Cache node_modules
-                uses: actions/cache@v3
-                with:
-                  path: $project_dir/node_modules
-                  key: ${{ runner.os }}-node-${{ hashFiles('${project_dir}/package-lock.json') }}
-                  restore-keys: |
-                    ${{ runner.os }}-node-
-
               cd $project_dir
               # Check if package.json contains a build script
               if grep -q '"build":' package.json; then
@@ -53,22 +44,13 @@ jobs:
           done
         done
 
-    - name: Cache Node.js modules on Pull Request
+    - name: Install and Build Projects on Pull Request
       if: github.event_name == 'pull_request'
       run: |
         # Get the list of modified files in the pull request
         modified_dirs=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | cut -d/ -f1-2 | sort | uniq)
         for dir in $modified_dirs; do
           if [ -f "$dir/package.json" ]; then
-            # Cache based on the hash of package-lock.json or yarn.lock
-            - name: Cache node_modules
-              uses: actions/cache@v3
-              with:
-                path: $dir/node_modules
-                key: ${{ runner.os }}-node-${{ hashFiles('${dir}/package-lock.json') }}
-                restore-keys: |
-                  ${{ runner.os }}-node-
-
             cd $dir
             # Check if package.json contains a build script
             if grep -q '"build":' package.json; then
